@@ -73,11 +73,11 @@ class AcGameObject {
 
     }
 
-    on_destory(){ // 销毁前执行
+    on_destroy(){ // 销毁前执行
     }
 
-    destory(){ // 删掉该物体
-        this.on_destory();
+    destroy(){ // 删掉该物体
+        this.on_destroy();
 
         for (let i = 0; i < AC_GAME_OBJECTS.length; i ++ )
         {
@@ -137,6 +137,55 @@ class GameMap extends AcGameObject{
     }
 }   
 
+class Particle extends AcGameObject{
+    constructor(playground, x, y, radius, vx, vy, color, speed, move_length)
+    {
+        super();
+        this.playground = playground;
+        this.ctx = this.playground.game_map.ctx;
+        this.x = x;
+        this.y = y;
+        this.radius = radius;
+        this.vx = vx;
+        this.vy = vy;
+        this.color = color;
+        this.speed = speed;
+        this.move_length = move_length;
+        this.friction = 0.9; // 摩擦力
+        this.eps = 0.1;
+    }
+
+    start()
+    {
+    }
+    
+    update()
+    {
+        if (this.move_length < this.eps || this.speed < this.eps)
+        {
+            this.destroy();
+            return false;
+        }
+
+        let moved = Math.min(this.move_length, this.speed * this.timedelta / 1000);
+        this.x += this.vx * moved;
+        this.y += this.vy * moved;
+        this.speed *= this.friction;
+        this.move_length -= moved;
+        //console.log(1);
+
+        this.render();
+    }
+
+    render()
+    {
+        // console.log(this.x, this.y, this.radius);
+        this.ctx.beginPath();
+        this.ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2, false);
+        this.ctx.fillStyle = this.color;
+        this.ctx.fill();
+    }
+}
 class Player extends AcGameObject {
     constructor(playground, x, y, radius, color, speed, is_me)
     {
@@ -147,13 +196,20 @@ class Player extends AcGameObject {
         this.y = y; // 坐标
         this.vx = 0; // 横向速度
         this.vy = 0; // 纵向速度
+        this.damage_x = 0; // 伤害横向速度
+        this.damage_y = 0; // 伤害纵向速度
+        this.damage_speed = 0; // 伤害速度
         this.move_length = 0; // 移动距离
         this.radius = radius; // 弧度
         this.color = color; // 物体颜色
         this.speed = speed; // 物体速度
+        this.friction = 0.9; // 摩擦力
         this.is_me = is_me; // 是否是当前玩家
+        this.protect_time = 0; // 保护时间
+
+
         this.eps = 0.1;
-        
+
         // 当前技能
         this.cur_skill = null;
     }
@@ -161,12 +217,12 @@ class Player extends AcGameObject {
     start(){
         //console.log(this.x);
         //console.log(this.y);
-        // 如果是当前操作物体
+        // 如果是当前操作物体, 用监听事件操控
         if (this.is_me)
         {
             this.add_listening_events();
         }
-        else // 如果是敌人
+        else // 如果是敌人，随机动
         {
             let tx = Math.random() * this.playground.width;
             let ty = Math.random() * this.playground.height;
@@ -220,12 +276,13 @@ class Player extends AcGameObject {
         let x = this.x, y = this.y;
         let radius = this.playground.height * 0.01;
         let angle = Math.atan2(ty - this.y, tx - this.x);
-        let vx = Math.cos(angle), vy = Math.sin(angle);
-        let color = "orange";
-        let speed = this.playground.height * 0.5;
-        let move_length = this.playground.height * 0.5;
+        let vx = Math.cos(angle), vy = Math.sin(angle);// 火球攻击方向
+        let color = "orange"; // 火球颜色
+        let speed = this.playground.height * 0.5; // 火球移动速度
+        let move_length = this.playground.height * 1; // 火球攻击距离
         // console.log(speed, move_length);
-        new FireBall(this.playground, this, x, y, radius, vx, vy, color, speed, move_length);
+        new FireBall(this.playground, this, x, y, radius, vx, vy, color, speed, move_length, this.playground.height * 0.01);
+        //console.log(this);
     }
 
     // 两点之间距离
@@ -235,7 +292,7 @@ class Player extends AcGameObject {
         let dy = y1 - y2;
         return Math.sqrt(dx * dx + dy * dy);
     }
-    
+
     move_to(tx, ty)
     {
         this.move_length = this.get_dist(this.x, this.y, tx, ty);
@@ -245,31 +302,97 @@ class Player extends AcGameObject {
         this.vy = Math.sin(angle); // 纵向速度
     }
 
-    update(){
-        if (this.move_length < this.eps)
+    // 被攻击
+    is_attacked(angle, damage)
+    {
+        this.radius -= damage; // 减去攻击值
+        if (this.radius < this.eps)
         {
-            this.move_length = 0;
-            this.vx = this.vy = 0;
+            this.destroy();
+            return false;
+        }
+        // 被攻击后
+        this.damage_x = Math.cos(angle);
+        this.damage_y = Math.sin(angle);
+        this.damage_speed = damage * 100;
+        //被攻击后的效果
+        //this.speed *= 0.8;
+      
+        // 被攻击时有粒子效果
+        for (let i = 0; i < 10 + Math.random() * 5; i ++)
+        {
+            //console.log(1);
+            let x = this.x, y = this.y;
+            let radius = this.radius * Math.random() * 0.1;
+            let angle = Math.PI * 2 * Math.random();
+            let vx = Math.cos(angle), vy = Math.sin(angle);
+            let color = this.color;
+            let speed = this.speed * 10;
+            let move_length = this.radius * Math.random() * 10;
+            new Particle(this.playground, x, y, radius, vx, vy, color, speed, move_length);
+        }
+    }
 
-            // 如果是敌人的话，下一次更新随机点
-            if (!this.is_me)
-            {
-                let tx = Math.random() * this.playground.width;
-                let ty = Math.random() * this.playground.height;
-                this.move_to(tx, ty);
-            }
+    update(){
+        this.protect_time += this.timedelta / 1000;
+        // 敌人随机攻击
+        if (!this.is_me && this.protect_time > 4 && Math.random() < 1 / 300.0)
+        {
+            // players[0]是玩家自己
+            // 随机选择一个攻击对象
+            let player = this.playground.players[Math.floor(Math.random() * this.playground.players.length)];
+            // console.log(this.playground.players);
+            this.shoot_fireball(player.x, player.y);
+        }
+
+        if(this.damage_speed > this.eps)
+        {
+            this.vx = this.vy = 0;
+            this.move_length = 0;
+            this.x += this.damage_x * this.damage_speed * this.timedelta / 1000;
+            this.y += this.damage_y * this.damage_speed * this.timedelta / 1000;
+            this.damage_speed *= this.friction;
         }
         else
         {
-            let moved = Math.min(this.move_length, this.speed * this.timedelta / 1000);
-            this.x += this.vx * moved;
-            this.y += this.vy * moved;
-            this.move_length -= moved;
+            if (this.move_length < this.eps)
+            {
+                this.move_length = 0;
+                this.vx = this.vy = 0;
+
+                // 如果是敌人的话，下一次更新随机点
+                if (!this.is_me)
+                {
+                    let tx = Math.random() * this.playground.width;
+                    let ty = Math.random() * this.playground.height;
+                    this.move_to(tx, ty);
+                }
+            }
+            else
+            {
+                let moved = Math.min
+                (this.move_length, this.speed * this.timedelta / 1000);
+                this.x += this.vx * moved;
+                this.y += this.vy * moved;
+                this.move_length -= moved;
+            }
         }
 
         this.render();
     }
     
+    // 销毁
+    on_destroy()
+    {
+        for (let i = 0; i < this.playground.players.length; i ++ )
+        {
+            if (this.playground.players[i] === this)
+            {
+                this.playground.players.splice(i, 1);
+            }
+        }
+    }
+
     render(){
         this.ctx.beginPath();
         this.ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2, false);
@@ -282,9 +405,10 @@ class Player extends AcGameObject {
     }
 }
 class FireBall extends AcGameObject{
-    constructor(playground, player, x, y, radius, vx, vy, color, speed, move_length){
+    constructor(playground, player, x, y, radius, vx, vy, color, speed, move_length, damage){
         super();
         this.playground = playground;
+        this.player = player;
         this.ctx = this.playground.game_map.ctx;
         this.x = x;
         this.y = y;
@@ -295,6 +419,7 @@ class FireBall extends AcGameObject{
         this.color = color;
         this.speed = speed;
         this.move_length = move_length;
+        this.damage = damage; // 伤害值
 
         this.eps = 0.1;
 
@@ -302,13 +427,13 @@ class FireBall extends AcGameObject{
     }
     
     start(){
-       // console.log(this.x, this.y, this.radius);
+        // console.log(this);
     }
 
     update(){
         // 火球距离到达，可以消失
         if (this.move_length < this.eps){
-            this.destory();
+            this.destroy();
             return false;
         }
         
@@ -316,10 +441,53 @@ class FireBall extends AcGameObject{
         this.x += this.vx * moved;// 方向乘距离
         this.y += this.vy * moved;
         this.move_length -= moved;
+        
+        // 碰撞检测
+        for (let i = 0; i < this.playground.players.length; i ++)
+        {
+            let player = this.playground.players[i];
+            if (this.player !== player && this.is_collision(player))
+            {
+                this.attack(player);
+                break;
+                // console.log(this.player, player);
+            }
+        }
 
         this.render();
     }
-   
+
+    // 计算距离
+    get_dist(x1, y1, x2, y2)
+    {
+        let dx = x1 - x2;
+        let dy = y1 - y2;
+        return Math.sqrt(dx * dx + dy * dy);
+    }
+
+    // 碰撞检测
+    is_collision(player)
+    {
+        //console.log(this.x, this.y, player.x, player.y);
+        let distance = this.get_dist(this.x, this.y, player.x, player.y);
+        if (distance < this.radius + player.radius)
+        {
+            // console.log("火球:" ,this.x, this.y, "敌人：");
+            // console.log("distance", distance);
+            // console.log("radius", this.radius, player.radius);
+            return true;
+        }
+        return false;
+    }
+    
+    //攻击玩家
+    attack(player)
+    {
+        let angle = Math.atan2(player.y - this.y, player.x - this.x);
+        player.is_attacked(angle, this.damage);
+        this.destroy();
+    }
+
     render(){
         this.ctx.beginPath();
         this.ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2, false);
@@ -345,13 +513,18 @@ class AcGamePlayground{
         // 创建敌人
         for (let i = 0; i < 5; i ++ )
         {
-            this.players.push(new Player(this, this.width / 2, this.height / 2, this.height * 0.05, "green", this.height * 0.15, false));
-
+            this.players.push(new Player(this, this.width / 2, this.height / 2, this.height * 0.05, this.get_random_color(), this.height * 0.15, false));
+            // console.log(this.get_random_color);
         }
 
         this.start();
     }
     
+    get_random_color(){
+        let colors = ["blue", "red", "pink", "grey", "green"];
+        return colors[Math.floor(Math.random() * 5)];
+    }
+
     start(){
         //console.log(this.width);
         //console.log(this.heighjt)

@@ -15,11 +15,11 @@ class AcGameObject {
 
     }
 
-    on_destory(){ // 销毁前执行
+    on_destroy(){ // 销毁前执行
     }
 
-    destory(){ // 删掉该物体
-        this.on_destory();
+    destroy(){ // 删掉该物体
+        this.on_destroy();
 
         for (let i = 0; i < AC_GAME_OBJECTS.length; i ++ )
         {
