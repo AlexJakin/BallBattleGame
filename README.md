@@ -14,4 +14,3 @@
 * static : 管理静态文件
 * consumers : 管理websocket
 
-## 项目详情
