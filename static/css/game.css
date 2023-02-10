@@ -7,7 +7,7 @@
 }
 
 .ac-game-settings-login {
-    height: 45vh;
+    height: 41vh;
     width: 20vw;
     position: relative;
     top: 50%;
@@ -16,6 +16,7 @@
     background-color: rgba(0, 0, 0, 0.7);
     border-radius: 5px;
 }
+
 
 .ac-game-settings-title {
     color: white;
@@ -90,7 +91,7 @@
 
 .ac-game-settings-acwing > img {
     position: relative;
-    top: 35%;
+    top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
     cursor: pointer;
@@ -104,9 +105,8 @@
     display: block;
 }
 
-
 .ac-game-settings-register {
-    height: 55vh;
+    height: 49vh;
     width: 20vw;
     position: relative;
     top: 50%;
@@ -116,6 +116,8 @@
     border-radius: 5px;
 }
 
+
+
 .ac-game-menu {
     width: 100%;
     height: 100%;
@@ -124,25 +126,23 @@
     user-select: none;
 }
 
-
-.ac-game-menu-field{
-    width:20vh;
-    position:relative;
+.ac-game-menu-field {
+    width: 20vw;
+    position: relative;
     top: 40%;
     left: 20%;
 }
 
-
-.ac-game-menu-field-item{
-    color : white;
-    height : 7vh;
-    width: 32vh;
+.ac-game-menu-field-item {
+    color: white;
+    height: 6vh;
+    width: 18vw;
     font-size: 4vh;
     font-style: italic;
     text-align: center;
-    background-color : rgba(39, 21, 28, 0.5);
+    background-color: rgba(39,21,28, 0.6);
     border-radius: 10px;
-    letter-spacing:0.5vw;
+    letter-spacing: 0.5vw;
     cursor: pointer;
 }
 
@@ -150,8 +150,54 @@
     transform: scale(1.2);
     transition: 100ms;
 }
-.ac-game-playground{
+
+.ac-game-playground {
     width: 100%;
     height: 100%;
     user-select: none;
+    background-color: grey;
 }
+
+.ac-game-playground > canvas {
+    position: relative;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+
+.ac-game-chat-field-history {
+    position: absolute;
+    top: 66%;
+    left: 20%;
+
+    transform: translate(-50%, -50%);
+
+    width: 20%;
+    height: 32%;
+
+    color: white;
+    font-size: 2vh;
+
+    padding: 5px;
+    overflow: auto;
+}
+
+.ac-game-chat-field-history::-webkit-scrollbar {
+    width: 0;
+}
+
+.ac-game-chat-field-input {
+    position: absolute;
+    top: 86%;
+    left: 20%;
+    transform: translate(-50%, -50%);
+
+    width: 20%;
+    height: 3vh;
+
+    color: white;
+    font-size: 2vh;
+
+    background-color: rgba(222,225,230, 0.2);
+}
+

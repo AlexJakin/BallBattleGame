@@ -20,7 +20,7 @@ class Player extends AcGameObject {
         this.protect_time = 0; // 保护时间
 
 
-        this.eps = 0.1;
+        this.eps = 0.01;
 
         // 当前技能
         this.cur_skill = null;
@@ -43,8 +43,8 @@ class Player extends AcGameObject {
         }
         else // 如果是敌人，随机动
         {
-            let tx = Math.random() * this.playground.width;
-            let ty = Math.random() * this.playground.height;
+            let tx = Math.random() * this.playground.width / this.playground.scale;
+            let ty = Math.random() * this.playground.height / this.playground.scale;
             this.move_to(tx, ty);
         }
     }
@@ -64,14 +64,14 @@ class Player extends AcGameObject {
             const rect = outer.ctx.canvas.getBoundingClientRect();
             if (e.which === 3)//右键
             {
-                outer.move_to(e.clientX - rect.left, e.clientY - rect.top);
+                outer.move_to((e.clientX - rect.left) / outer.playground.scale, (e.clientY - rect.top) / outer.playground.scale);
             }
             else if (e.which === 1) // 鼠标左键
             {
                 if (outer.cur_skill === "fireball")
                 {
                     // 从该物体当前位置开始发射
-                    outer.shoot_fireball(e.clientX - rect.left, e.clientY - rect.top);
+                    outer.shoot_fireball((e.clientX - rect.left) / outer.playground.scale, (e.clientY - rect.top) / outer.playground.scale);
                 }
                 // 看是否选择按一次Q键只能发射一次
                 // outer.cur_skill = null;
@@ -95,14 +95,14 @@ class Player extends AcGameObject {
     {
         //console.log("s f", tx, ty);
         let x = this.x, y = this.y;
-        let radius = this.playground.height * 0.01;
+        let radius = 0.01;
         let angle = Math.atan2(ty - this.y, tx - this.x);
         let vx = Math.cos(angle), vy = Math.sin(angle);// 火球攻击方向
         let color = "orange"; // 火球颜色
-        let speed = this.playground.height * 0.5; // 火球移动速度
-        let move_length = this.playground.height * 1; // 火球攻击距离
+        let speed = 0.5; // 火球移动速度
+        let move_length = 1; // 火球攻击距离
         // console.log(speed, move_length);
-        new FireBall(this.playground, this, x, y, radius, vx, vy, color, speed, move_length, this.playground.height * 0.01);
+        new FireBall(this.playground, this, x, y, radius, vx, vy, color, speed, move_length, 0.01);
         //console.log(this);
     }
 
@@ -153,11 +153,17 @@ class Player extends AcGameObject {
             new Particle(this.playground, x, y, radius, vx, vy, color, speed, move_length);
         }
     }
-
+    
     update(){
+        this.update_move();
+        this.render();
+    }
+
+    //更新玩家移动
+    update_move(){
         this.protect_time += this.timedelta / 1000;
         // 敌人随机攻击
-        if (!this.is_me && this.protect_time > 4 && Math.random() < 1 / 300.0)
+        if (!this.is_me && this.protect_time > 4 && Math.random() < 1 / 100.0)
         {
             // players[0]是玩家自己
             // 随机选择一个攻击对象
@@ -184,8 +190,8 @@ class Player extends AcGameObject {
                 // 如果是敌人的话，下一次更新随机点
                 if (!this.is_me)
                 {
-                    let tx = Math.random() * this.playground.width;
-                    let ty = Math.random() * this.playground.height;
+                    let tx = Math.random() * this.playground.width / this.playground.scale;
+                    let ty = Math.random() * this.playground.height / this.playground.scale;
                     this.move_to(tx, ty);
                 }
             }
@@ -199,7 +205,7 @@ class Player extends AcGameObject {
             }
         }
 
-        this.render();
+        //this.render();
     }
 
     // 销毁
@@ -215,20 +221,22 @@ class Player extends AcGameObject {
     }
 
     render(){
+        let scale = this.playground.scale;
+        // console.log(scale);
         if (this.is_me)
         {
             this.ctx.save();
             this.ctx.beginPath();
-            this.ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2, false);
+            this.ctx.arc(this.x * scale, this.y * scale, this.radius * scale, 0, Math.PI * 2, false);
             this.ctx.stroke();
             this.ctx.clip();
-            this.ctx.drawImage(this.img, this.x - this.radius, this.y - this.radius, this.radius * 2, this.radius * 2); 
+            this.ctx.drawImage(this.img, (this.x - this.radius) * scale, (this.y - this.radius) * scale, this.radius * 2 * scale, this.radius * 2 * scale); 
             this.ctx.restore();
         }
         else
         {
             this.ctx.beginPath();
-            this.ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2, false);
+            this.ctx.arc(this.x * scale, this.y * scale, this.radius * scale, 0, Math.PI * 2, false);
             this.ctx.fillStyle = this.color;
             this.ctx.fill();
         }
