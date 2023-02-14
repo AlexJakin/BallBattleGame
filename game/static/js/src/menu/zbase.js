@@ -9,7 +9,7 @@ class AcGameMenu{
             单人模式
         </div>
         <br>
-        <div class = "ac-game-menu-field-item ac-game-menu-filed-item-multi-mode">
+        <div class = "ac-game-menu-field-item ac-game-menu-field-item-multi-mode">
             多人模式
         </div>
         <br>
@@ -35,15 +35,15 @@ class AcGameMenu{
         let outer = this;
         this.$single_mode.click(function(){
             outer.hide();
-            outer.root.playground.show();
+            outer.root.playground.show("single mode");
         });
 
         this.$multi_mode.click(function(){
-            
+            outer.hide();
+            outer.root.playground.show("multi mode");
         });
 
         this.$settings.click(function(){
-            //console.log(1);
             outer.root.settings.logout_on_remote();
         });
     }

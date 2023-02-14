@@ -6,6 +6,18 @@ class AcGameObject {
         AC_GAME_OBJECTS.push(this);
         this.has_called_start = false; // 是否试行过start
         this.timedelta = 0; // 当前帧距离上一帧的时间间隔
+        this.uuid = this.create_uuid();
+    }
+
+    // 为每一名物体随机生成一个唯一id，联机对战时候标记
+    create_uuid(){
+        let res = "";
+        for (let i = 0; i < 8; i ++)
+        {
+            let x = parseInt(Math.floor(Math.random() * 10));
+            res += x;
+        }
+        return res;
     }
 
     start(){ // 只会在第一帧执行一次

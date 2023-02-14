@@ -9,7 +9,7 @@ class AcGameMenu{
             单人模式
         </div>
         <br>
-        <div class = "ac-game-menu-field-item ac-game-menu-filed-item-multi-mode">
+        <div class = "ac-game-menu-field-item ac-game-menu-field-item-multi-mode">
             多人模式
         </div>
         <br>
@@ -35,15 +35,15 @@ class AcGameMenu{
         let outer = this;
         this.$single_mode.click(function(){
             outer.hide();
-            outer.root.playground.show();
+            outer.root.playground.show("single mode");
         });
 
         this.$multi_mode.click(function(){
-            
+            outer.hide();
+            outer.root.playground.show("multi mode");
         });
 
         this.$settings.click(function(){
-            //console.log(1);
             outer.root.settings.logout_on_remote();
         });
     }
@@ -66,6 +66,18 @@ class AcGameObject {
         AC_GAME_OBJECTS.push(this);
         this.has_called_start = false; // 是否试行过start
         this.timedelta = 0; // 当前帧距离上一帧的时间间隔
+        this.uuid = this.create_uuid();
+    }
+
+    // 为每一名物体随机生成一个唯一id，联机对战时候标记
+    create_uuid(){
+        let res = "";
+        for (let i = 0; i < 8; i ++)
+        {
+            let x = parseInt(Math.floor(Math.random() * 10));
+            res += x;
+        }
+        return res;
     }
 
     start(){ // 只会在第一帧执行一次
@@ -200,8 +212,9 @@ class Particle extends AcGameObject{
     }
 }
 class Player extends AcGameObject {
-    constructor(playground, x, y, radius, color, speed, is_me)
+    constructor(playground, x, y, radius, color, speed, character, username, photo)
     {
+        console.log(character, username, photo);
         super(); // 继承父类
         this.playground = playground; // 地图
         this.ctx = this.playground.game_map.ctx;
@@ -217,7 +230,9 @@ class Player extends AcGameObject {
         this.color = color; // 物体颜色
         this.speed = speed; // 物体速度
         this.friction = 0.9; // 摩擦力
-        this.is_me = is_me; // 是否是当前玩家
+        this.character = character; // 有三种角色 me自己 enemy其他玩家 robot机器人
+        this.username = username;
+        this.photo = photo;
         this.protect_time = 0; // 保护时间
 
 
@@ -226,23 +241,23 @@ class Player extends AcGameObject {
         // 当前技能
         this.cur_skill = null;
 
-        // 当前玩家的头像渲染到球上
-        if (this.is_me)
+        // 若不为机器人的话，当前玩家的头像渲染到球上
+        if (this.character !== "robot")
         {
             this.img = new Image();
-            this.img.src = this.playground.root.settings.photo;
+            this.img.src = this.photo;
         }
     }
 
     start(){
         //console.log(this.x);
         //console.log(this.y);
-        // 如果是当前操作物体, 用监听事件操控
-        if (this.is_me)
+        // 如果是自己控制的物体, 才用监听事件操控
+        if (this.character === "me")
         {
             this.add_listening_events();
         }
-        else // 如果是敌人，随机动
+        else if (this.character === "robot")// 如果是机器人，随机动
         {
             let tx = Math.random() * this.playground.width / this.playground.scale;
             let ty = Math.random() * this.playground.height / this.playground.scale;
@@ -363,8 +378,8 @@ class Player extends AcGameObject {
     //更新玩家移动
     update_move(){
         this.protect_time += this.timedelta / 1000;
-        // 敌人随机攻击
-        if (!this.is_me && this.protect_time > 4 && Math.random() < 1 / 100.0)
+        // 机器人随机攻击
+        if (this.character === "robot" && this.protect_time > 4 && Math.random() < 1 / 300.0)
         {
             // players[0]是玩家自己
             // 随机选择一个攻击对象
@@ -389,7 +404,7 @@ class Player extends AcGameObject {
                 this.vx = this.vy = 0;
 
                 // 如果是敌人的话，下一次更新随机点
-                if (!this.is_me)
+                if (this.character === "robot")
                 {
                     let tx = Math.random() * this.playground.width / this.playground.scale;
                     let ty = Math.random() * this.playground.height / this.playground.scale;
@@ -424,7 +439,7 @@ class Player extends AcGameObject {
     render(){
         let scale = this.playground.scale;
         // console.log(scale);
-        if (this.is_me)
+        if (this.character !== "robot")
         {
             this.ctx.save();
             this.ctx.beginPath();
@@ -540,11 +555,68 @@ class FireBall extends AcGameObject{
         this.ctx.fill();
     }
 }
+class MultiPlayerSocket{
+    constructor(playground) {
+        this.playground = playground;
+
+        this.ws = new WebSocket("wss://app4507.acapp.acwing.com.cn/wss/multiplayer/");
+        this.start();
+    }
+
+    start(){
+        this.receive();
+    }
+
+    receive(){
+        let outer = this;
+        this.ws.onmessage = function(e) {
+            let data = JSON.parse(e.data);
+            let uuid = data.uuid; // 接收其他玩家uuiid
+            let event = data.event;
+            
+            if (uuid == outer.uuid) return false; // 如果是自己 则不用接收
+            //如果是联机玩家 则加入房间地图
+            if (event === "create_player")
+            {
+                outer.receive_create_player(uuid, data.username, data.photo);
+            }
+        }
+
+    }
+
+    send_create_player(username, photo) {
+        let outer = this;
+        this.ws.send(JSON.stringify({
+            'event' : "create_player",
+            'uuid' : outer.uuid,
+            'username': username,
+            'photo': photo
+        }));
+    }
+
+
+    receive_create_player(uuid, username, photo) {
+        let player = new Player(
+            this.playground,
+            this.playground.width / 2 / this.playground.scale,
+            0.5,
+            0.05,
+            "white",
+            0.15,
+            "enemy",
+            username,
+            photo,
+        );
+
+        player.uuid = uuid;
+        this.playground.players.push(player);
+    }
+}
 class AcGamePlayground{
     constructor(root){
         this.root = root;
         this.$playground = $(`<div class="ac-game-playground"></div>`);
-        
+
         this.hide(); // 先加载菜单 再进入游戏
         this.root.$ac_game.append(this.$playground);
         this.start();
@@ -575,25 +647,41 @@ class AcGamePlayground{
     }
 
     // 打开游戏界面
-    show(){
-        console.log(this.scale);
+    show(mode){
+        let outer = this;
         this.$playground.show();
 
         // 界面显示时都要resize，统一长度
-        this.resize();
+        // this.resize();
 
         // this.root.$ac_game.append(this.$playground);
         this.width = this.$playground.width();
         this.height = this.$playground.height();
         this.game_map = new GameMap(this);
-        this.players = []; // 玩家列表
-        this.players.push(new Player(this, this.width / 2 / this.scale, 0.5, 0.05, "white", 0.15, true));
 
-        // 创建敌人
-        for (let i = 0; i < 5; i ++ )
+        this.resize();
+
+        this.players = []; // 玩家列表
+        this.players.push(new Player(this, this.width / 2 / this.scale, 0.5, 0.05, "white", 0.15, "me", this.root.settings.username, this.root.settings.photo));
+
+        // 判断是什么模式
+        if (mode === "single mode")
         {
-            this.players.push(new Player(this, this.width / 2 / this.scale, 0.5, 0.05, this.get_random_color(), 0.15, false));
-            // console.log(this.get_random_color);
+            // 创建敌人
+            for (let i = 0; i < 5; i ++ )
+            {
+                this.players.push(new Player(this, this.width / 2 / this.scale, 0.5, 0.05, this.get_random_color(), 0.15, "robot"));
+                // console.log(this.get_random_color);
+            }
+        }
+        else if (mode === "multi mode")
+        {
+            this.mps = new MultiPlayerSocket(this);
+            this.mps.uuid = this.players[0].uuid;
+            // 当链接的时候向后端发送消息
+            this.mps.ws.onopen = function() {
+                outer.mps.send_create_player(outer.root.settings.username, outer.root.settings.photo);
+            }
         }
 
 
@@ -787,7 +875,6 @@ class Settings{
                 password : password,
             },
             success : function(resp){
-                console.log(resp);
                 if (resp.result === "success")
                 {
                     location.reload();
@@ -815,7 +902,6 @@ class Settings{
                 password_confirm:password_confirm,
             },
             success: function(resp){
-                console.log(resp);
                 if (resp.result === "success")
                 {
                     location.reload();
@@ -836,7 +922,6 @@ class Settings{
             url : "https://app4507.acapp.acwing.com.cn/settings/logout/",
             type: "GET",
             success: function(resp){
-                console.log(resp);
                 if (resp.result === "success")
                 {
                     location.reload();
@@ -893,7 +978,6 @@ class Settings{
                 platform : outer.platform,
             },
             success: function(resp){
-                console.log(resp);
                 if (resp.result === "success")
                 {
                     outer.username = resp.username;

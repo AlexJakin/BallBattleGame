@@ -1,6 +1,7 @@
 class Player extends AcGameObject {
-    constructor(playground, x, y, radius, color, speed, is_me)
+    constructor(playground, x, y, radius, color, speed, character, username, photo)
     {
+        console.log(character, username, photo);
         super(); // 继承父类
         this.playground = playground; // 地图
         this.ctx = this.playground.game_map.ctx;
@@ -16,7 +17,9 @@ class Player extends AcGameObject {
         this.color = color; // 物体颜色
         this.speed = speed; // 物体速度
         this.friction = 0.9; // 摩擦力
-        this.is_me = is_me; // 是否是当前玩家
+        this.character = character; // 有三种角色 me自己 enemy其他玩家 robot机器人
+        this.username = username;
+        this.photo = photo;
         this.protect_time = 0; // 保护时间
 
 
@@ -25,23 +28,23 @@ class Player extends AcGameObject {
         // 当前技能
         this.cur_skill = null;
 
-        // 当前玩家的头像渲染到球上
-        if (this.is_me)
+        // 若不为机器人的话，当前玩家的头像渲染到球上
+        if (this.character !== "robot")
         {
             this.img = new Image();
-            this.img.src = this.playground.root.settings.photo;
+            this.img.src = this.photo;
         }
     }
 
     start(){
         //console.log(this.x);
         //console.log(this.y);
-        // 如果是当前操作物体, 用监听事件操控
-        if (this.is_me)
+        // 如果是自己控制的物体, 才用监听事件操控
+        if (this.character === "me")
         {
             this.add_listening_events();
         }
-        else // 如果是敌人，随机动
+        else if (this.character === "robot")// 如果是机器人，随机动
         {
             let tx = Math.random() * this.playground.width / this.playground.scale;
             let ty = Math.random() * this.playground.height / this.playground.scale;
@@ -162,8 +165,8 @@ class Player extends AcGameObject {
     //更新玩家移动
     update_move(){
         this.protect_time += this.timedelta / 1000;
-        // 敌人随机攻击
-        if (!this.is_me && this.protect_time > 4 && Math.random() < 1 / 100.0)
+        // 机器人随机攻击
+        if (this.character === "robot" && this.protect_time > 4 && Math.random() < 1 / 300.0)
         {
             // players[0]是玩家自己
             // 随机选择一个攻击对象
@@ -188,7 +191,7 @@ class Player extends AcGameObject {
                 this.vx = this.vy = 0;
 
                 // 如果是敌人的话，下一次更新随机点
-                if (!this.is_me)
+                if (this.character === "robot")
                 {
                     let tx = Math.random() * this.playground.width / this.playground.scale;
                     let ty = Math.random() * this.playground.height / this.playground.scale;
@@ -223,7 +226,7 @@ class Player extends AcGameObject {
     render(){
         let scale = this.playground.scale;
         // console.log(scale);
-        if (this.is_me)
+        if (this.character !== "robot")
         {
             this.ctx.save();
             this.ctx.beginPath();
