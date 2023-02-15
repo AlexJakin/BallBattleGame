@@ -161,7 +161,6 @@ class Settings{
             success: function(resp){
                 if (resp.result === "success")
                 {
-                    //console.log(resp.apply_code_url);
                     window.location.replace(resp.apply_code_url);
                 }
             }
@@ -223,8 +222,11 @@ class Settings{
 
     logout_on_remote(){ // 在远程服务器上退出登录
         // 注销功能仅支持WEB
-        if (this.platform === "ACAPP") return false;
-        
+        if (this.platform === "ACAPP")
+        {
+            this.root.AcWingOS.api.window.close();//当使用acwing平台登录时关闭直接关闭窗口
+        }
+        else{
         $.ajax({
             url : "https://app4507.acapp.acwing.com.cn/settings/logout/",
             type: "GET",
@@ -235,6 +237,7 @@ class Settings{
                 }
             }
         });
+        }
     }
 
     register(){ // 打开注册页面
@@ -243,7 +246,6 @@ class Settings{
     }
     
     login(){ // 登录
-        this.$register.hide();
         this.$login.show();
     }
 

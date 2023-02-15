@@ -19,7 +19,7 @@ class FireBall extends AcGameObject{
 
         this.start();
     }
-    
+
     start(){
         // console.log(this);
     }
@@ -30,12 +30,21 @@ class FireBall extends AcGameObject{
             this.destroy();
             return false;
         }
-        
+        this.update_move();
+        if (this.player.character !== "enemy"){ // 只有不是敌人才判断碰撞，由本窗口玩家检测碰撞是否发生
+            this.update_attack();
+        }
+        this.render();
+    }
+
+    update_move(){
         let moved = Math.min(this.move_length, this.speed * this.timedelta / 1000);
         this.x += this.vx * moved;// 方向乘距离
         this.y += this.vy * moved;
         this.move_length -= moved;
-        
+    }
+
+    update_attack(){
         // 碰撞检测
         for (let i = 0; i < this.playground.players.length; i ++)
         {
@@ -47,8 +56,6 @@ class FireBall extends AcGameObject{
                 // console.log(this.player, player);
             }
         }
-
-        this.render();
     }
 
     // 计算距离
@@ -73,12 +80,17 @@ class FireBall extends AcGameObject{
         }
         return false;
     }
-    
+
     //攻击玩家
     attack(player)
     {
         let angle = Math.atan2(player.y - this.y, player.x - this.x);
         player.is_attacked(angle, this.damage);
+
+        // 如果是多人模式的话 同步一下攻击事件
+        if (this.playground.mode === "multi mode"){
+            this.playground.mps.send_attack(player.uuid, player.x, player.y, angle, this.damage, this.uuid);
+        }
         this.destroy();
     }
 
@@ -89,5 +101,16 @@ class FireBall extends AcGameObject{
         this.ctx.arc(this.x * scale, this.y * scale, this.radius * scale, 0, Math.PI * 2, false);
         this.ctx.fillStyle = this.color;
         this.ctx.fill();
+    }
+
+    on_destroy(){
+        let fireballs = this.player.fireballs;
+        for (let i = 0; i < fireballs.length; i ++ )
+        {
+            if (fireballs[i] === this){
+                fireballs.splice(i, 1);
+                break;
+            }
+        }
     }
 }

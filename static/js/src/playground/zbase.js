@@ -1,5 +1,6 @@
 class AcGamePlayground{
     constructor(root){
+        this.player_count = 0;
         this.root = root;
         this.$playground = $(`<div class="ac-game-playground"></div>`);
 
@@ -44,6 +45,10 @@ class AcGamePlayground{
         this.width = this.$playground.width();
         this.height = this.$playground.height();
         this.game_map = new GameMap(this);
+        this.mode = mode;
+        // 三种状态waiting fighting over
+        this.state = "waiting";
+        this.notice_board = new NoticeBoard(this);
 
         this.resize();
 
