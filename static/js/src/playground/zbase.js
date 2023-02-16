@@ -10,14 +10,14 @@ class AcGamePlayground{
     }
 
     get_random_color(){
-        let colors = ["blue", "red", "pink", "grey", "green"];
+        let colors = ["blue", "red", "pink", "grey", "green", "aqua", "maroon", "yellow", "purple", "silver"];
         return colors[Math.floor(Math.random() * 7)];
     }
 
     start(){
         let outer = this;
         $(window).resize(function(){
-            outer.resize(); 
+            outer.resize();
         });
     }
 
@@ -67,6 +67,7 @@ class AcGamePlayground{
         }
         else if (mode === "multi mode")
         {
+            this.chat_field = new ChatField(this);
             this.mps = new MultiPlayerSocket(this);
             this.mps.uuid = this.players[0].uuid;
             // 当链接的时候向后端发送消息

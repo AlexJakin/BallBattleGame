@@ -85,7 +85,7 @@ class Player extends AcGameObject {
         // 监听鼠标
         this.playground.game_map.$canvas.mousedown(function(e){
             // 如果不是对战状态 不能操作
-            if (outer.playground.state !== "fighting") return false;
+            if (outer.playground.state !== "fighting") return true;
 
             //获取画布坐标
             const rect = outer.ctx.canvas.getBoundingClientRect();
@@ -134,7 +134,19 @@ class Player extends AcGameObject {
 
 
         // 用户选择技能
-        $(window).keydown(function(e){
+        this.playground.game_map.$canvas.keydown(function(e){
+            // 聊天功能 等待时也可以聊天
+            if (e.which === 32){ // space
+                if (outer.playground.mode === "multi mode") {// 打开聊天框
+                    outer.playground.chat_field.show_input();
+                    return false;
+                }
+            }else if (e.which === 27){ // esc
+                if (outer.playground.mode === "multi mode"){
+                    outer.playground.chat_field.hide_input();
+                }
+            }
+
             // 如果对局不是fighting状态直接返回
             if (outer.playground.state !== "fighting") return true;
 
