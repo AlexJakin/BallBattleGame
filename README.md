@@ -1,8 +1,8 @@
 ### Django游戏项目
 
-    1. 游戏地址：https://app4507.acapp.acwing.com.cn/
-    2. 推荐使用chrome浏览器
-    3. 游戏仅支持pc端
+    * 游戏地址：https://app4507.acapp.acwing.com.cn/
+    * 推荐使用chrome浏览器
+    * 游戏仅支持pc端
 
 ![菜单](/pic/menu.png)
 
