@@ -232,8 +232,8 @@ class GameMap extends AcGameObject{
         this.ctx.canvas.height = this.playground.height;
 
         // 取消渐变过程
-        this.ctx.fillStyle = "rgba(0, 0, 0, 1)";
-        this.ctx.fillRect(0, 0, this.ctx.canvas.width, this.ctx.canvas.height);
+        //this.ctx.fillStyle = "rgba(0, 0, 0, 1)";
+        //this.ctx.fillRect(0, 0, this.ctx.canvas.width, this.ctx.canvas.height);
 
     }
 
@@ -242,8 +242,9 @@ class GameMap extends AcGameObject{
     }
 
     render(){
-        this.ctx.fillStyle = "rgba(0, 0, 0, 0.2)";
-        this.ctx.fillRect(0, 0, this.ctx.canvas.width, this.ctx.canvas.height);
+        //this.ctx.fillStyle = "rgba(0, 0, 0, 0.2)";
+        //this.ctx.fillRect(0, 0, this.ctx.canvas.width, this.ctx.canvas.height);
+        this.ctx.clearRect(0, 0, this.ctx.canvas.width, this.ctx.canvas.height);
     }
 }   
 
@@ -688,6 +689,7 @@ class Player extends AcGameObject {
             this.ctx.save();
             this.ctx.beginPath();
             this.ctx.arc(this.x * scale, this.y * scale, this.radius * scale, 0, Math.PI * 2, false);
+            this.ctx.lineWidth = 0;
             this.ctx.stroke();
             this.ctx.clip();
             this.ctx.drawImage(this.img, (this.x - this.radius) * scale, (this.y - this.radius) * scale, this.radius * 2 * scale, this.radius * 2 * scale); 
@@ -1151,7 +1153,7 @@ class Settings{
 <div class = "ac-game-settings">
 <div class = "ac-game-settings-login">
     <div class = "ac-game-settings-title">
-        登录
+        登录(测试账号zjb,密码zjb,详细可以查看github仓库说明)
     </div>
     <div class="ac-game-settings-username">
         <div class = "ac-game-settings-item">
@@ -1167,7 +1169,7 @@ class Settings{
         <div class = "ac-game-settings-item">
             <button>登录</button>
         </div>
-    </div>
+    </div>i
     <div class = "ac-game-settings-error-message">
         
     </div>
@@ -1185,7 +1187,7 @@ class Settings{
 
     <div class = "ac-game-settings-register">
         <div class="ac-game-settings-title">
-            注册
+            注册（存在兼容问题，请使用chrome访问）
         </div>
         <div class="ac-game-settings-username">
             <div class="ac-game-settings-item">

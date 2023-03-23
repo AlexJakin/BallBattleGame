@@ -7,7 +7,7 @@
 }
 
 .ac-game-settings-login {
-    height: 41vh;
+    height: 52vh;
     width: 20vw;
     position: relative;
     top: 50%;
@@ -106,7 +106,7 @@
 }
 
 .ac-game-settings-register {
-    height: 49vh;
+    height: 52vh;
     width: 20vw;
     position: relative;
     top: 50%;
@@ -159,6 +159,8 @@
 }
 
 .ac-game-playground > canvas {
+    background-image: url('/static/image/playground/game_map/game_map.gif');
+    background-size: 200% 100%;
     position: relative;
     top: 50%;
     left: 50%;

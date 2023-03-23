@@ -21,8 +21,8 @@ class GameMap extends AcGameObject{
         this.ctx.canvas.height = this.playground.height;
 
         // 取消渐变过程
-        this.ctx.fillStyle = "rgba(0, 0, 0, 1)";
-        this.ctx.fillRect(0, 0, this.ctx.canvas.width, this.ctx.canvas.height);
+        //this.ctx.fillStyle = "rgba(0, 0, 0, 1)";
+        //this.ctx.fillRect(0, 0, this.ctx.canvas.width, this.ctx.canvas.height);
 
     }
 
@@ -31,8 +31,9 @@ class GameMap extends AcGameObject{
     }
 
     render(){
-        this.ctx.fillStyle = "rgba(0, 0, 0, 0.2)";
-        this.ctx.fillRect(0, 0, this.ctx.canvas.width, this.ctx.canvas.height);
+        //this.ctx.fillStyle = "rgba(0, 0, 0, 0.2)";
+        //this.ctx.fillRect(0, 0, this.ctx.canvas.width, this.ctx.canvas.height);
+        this.ctx.clearRect(0, 0, this.ctx.canvas.width, this.ctx.canvas.height);
     }
 }   
 

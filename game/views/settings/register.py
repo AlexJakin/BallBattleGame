@@ -25,7 +25,7 @@ def register(request):
     user.set_password(password);
     user.save()
 
-    Player.objects.create(user=user, photo="https://tupian.qqw21.com/article/UploadPic/2020-4/2020492231947451.jpg")
+    Player.objects.create(user=user, photo="https://www.ga-me.com/upload/2016/05/89ba70ad04712c722660242862fa8156.png")
     login(request, user)
     return JsonResponse({
         'result':"success"

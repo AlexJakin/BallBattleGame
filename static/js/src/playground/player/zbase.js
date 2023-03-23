@@ -361,6 +361,7 @@ class Player extends AcGameObject {
             this.ctx.save();
             this.ctx.beginPath();
             this.ctx.arc(this.x * scale, this.y * scale, this.radius * scale, 0, Math.PI * 2, false);
+            this.ctx.lineWidth = 0;
             this.ctx.stroke();
             this.ctx.clip();
             this.ctx.drawImage(this.img, (this.x - this.radius) * scale, (this.y - this.radius) * scale, this.radius * 2 * scale, this.radius * 2 * scale); 
