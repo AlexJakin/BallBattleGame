@@ -54,5 +54,56 @@
 * static : 管理静态文件
 * consumers : 管理websocket
 
+## 游戏代码解析
 
+1. 玩家类Player，每个玩家对象有以下属性：
+    * playground = playground; // 地图
+    * ctx = this.playground.game_map.ctx;
+    * x = x; // 坐标
+    * y = y; // 坐标
+    * vx = 0; // 横向速度
+    * vy = 0; // 纵向速度
+    * damage_x = 0; // 伤害横向速度
+    * damage_y = 0; // 伤害纵向速度
+    * damage_speed = 0; // 伤害速度
+    * move_length = 0; // 移动距离
+    * radius = radius; // 弧度
+    * color = color; // 物体颜色
+    * speed = speed; // 物体速度
+    * friction = 0.9; // 摩擦力
+    * character = character; // 有三种角色 me自己 enemy其他玩家 robot机器人
+    * username = username;
+    * photo = photo;
+    * protect_time = 0; // 保护时间
+    * fireballs = []; // 保存每个玩家的子弹
 
+2. 玩家战斗时候的粒子效应对象：
+
+    * this.playground = playground;
+    * this.ctx = this.playground.game_map.ctx;
+    * this.x = x;
+    * this.y = y;
+    * this.radius = radius;
+    * this.vx = vx;
+    * this.vy = vy;
+    * this.color = color;
+    * this.speed = speed;
+    * this.move_length = move_length;
+    * this.friction = 0.9; // 摩擦力
+    * this.eps = 0.01;
+
+3. 技能对象：
+    * this.playground = playground;
+    * this.player = player;
+    * this.ctx = this.playground.game_map.ctx;
+    * this.x = x;
+    * this.y = y;
+    * this.vx = vx;
+    * this.vy = vy;
+    * this.move_length = 0;
+    * this.radius = radius;
+    * this.color = color;
+    * this.speed = speed;
+    * this.move_length = move_length;
+    * this.damage = damage; // 伤害值
+    * this.eps = 0.01;
