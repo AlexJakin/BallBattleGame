@@ -6,6 +6,15 @@
 
 ![菜单](/pic/menu.png)
 
+## 游戏服务器运行环境
+
+1. Ubuntu20.04
+2. docker 20.10.21
+3. nginx 1.18.0
+4. python3
+5. django
+6. redis
+
 ## 游戏玩法
 
 1. 注册
